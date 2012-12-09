@@ -10,16 +10,17 @@ Button * startStopButton;
 // Outputs
 Lcd * lcd;
 int outputPin;
-int outputState;
 
 // Clock variables
 boolean clockActive = false;
 long startTimeMilis = 0;
 
+long programmedTime = 0;
 
 // Planificator configuration
 long previousMillis = 0;        // will store last time LCD was updated
 long interval = 1000;           // interval at which to upload (milliseconds) 
+
 
 
 void startStopButtonPressed() {
@@ -31,10 +32,11 @@ void startStopButtonPressed() {
   if (clockActive) {
     
     clockActive=false;
+    digitalWrite(outputPin, LOW);
     
-  } else {
-  
+  } else if (programmedTime > 0) {
     clockActive=true;
+    digitalWrite(outputPin, HIGH);
   }
 
 
@@ -47,9 +49,25 @@ void upButtonPressed() {
 #endif
 
   if (!clockActive) {
-  
+    programmedTime += 5;
+    programmedTime %= MAX_PROGRAMMABLE_TIME;
+    updateDisplay();
   }
 
+}
+
+
+void upButtonLongPressed() {
+#ifdef _INSOLA_3000_DEBUG_
+  Serial.println("Up button looong pressed");
+#endif
+
+  if (!clockActive) {
+    programmedTime += 60;
+    programmedTime %= MAX_PROGRAMMABLE_TIME;
+    updateDisplay();
+  }
+  
 }
 
 
@@ -60,15 +78,42 @@ void downButtonPressed() {
 #endif
 
   if (!clockActive) {
-  
+    programmedTime -= 5;
+    programmedTime %= MAX_PROGRAMMABLE_TIME;
+    updateDisplay();
   }
 
 }
 
 
+void downButtonLongPressed() {
+ 
+#ifdef _INSOLA_3000_DEBUG_
+  Serial.println("Down button looong pressed");
+#endif
+
+  if (!clockActive) {
+    programmedTime -= 60;
+    programmedTime %= MAX_PROGRAMMABLE_TIME;
+    updateDisplay();
+  }
+  
+}
+
 void updateDisplay() {
 
+  int minutes = programmedTime / 60;
+  int seconds = programmedTime % 60;
   
+  int minutesMSD = (minutes / 10) % 10;
+  int minutesLSD = minutes % 10;
+  int secondsMSD = seconds / 10; 
+  int secondsLSD = seconds % 10;
+  
+  lcd->sendDigit(secondsLSD);
+  lcd->sendDigit(secondsMSD);
+  lcd->sendDigit(minutesLSD);
+  lcd->sendDigit(minutesMSD);
   
 }
 
@@ -80,12 +125,17 @@ void setup() {
   lcd = new Lcd(LCD_UPDATE_PIN,LCD_CLOCK_PIN,LCD_DATA_PIN);
   //lcd->sendCharString("Insola 3000", 500);
   //lcd->sendCharString("0000", 0);
+
+  upButton = new Button(UP_BUTTON_PIN, upButtonPressed, DEBOUNCE_DELAY);
+  downButton = new Button(DOWN_BUTTON_PIN, downButtonPressed, DEBOUNCE_DELAY);
+//  upButton = new Button(UP_BUTTON_PIN, upButtonPressed, DEBOUNCE_DELAY, upButtonLongPressed, LONGPRESS_DELAY);
+//  downButton = new Button(DOWN_BUTTON_PIN, downButtonPressed, DEBOUNCE_DELAY, downButtonLongPressed, LONGPRESS_DELAY);
+  startStopButton = new Button(STARTSTOP_BUTTON_PIN, startStopButtonPressed, DEBOUNCE_DELAY);
   
-  upButton = new Button(UP_BUTTON_PIN, upButtonPressed, 20);
-  downButton = new Button(DOWN_BUTTON_PIN, downButtonPressed, 20);
-  startStopButton = new Button(STARTSTOP_BUTTON_PIN, startStopButtonPressed, 20);
-  
-  outputPin = 8;
+  outputPin = OUTPUT_PIN;
+  pinMode(outputPin, OUTPUT);
+    
+  updateDisplay();
 }
 
 void loop() {
@@ -95,13 +145,18 @@ void loop() {
   downButton->update();
   startStopButton->update();
   
-  unsigned long currentMillis = millis();
+  if (clockActive) {
+    unsigned long currentMillis = millis();
  
- 
-  if(currentMillis - previousMillis > interval) {
-    // save the last time you blinked the LED 
-     previousMillis = currentMillis;   
- 
+    if(currentMillis - previousMillis > interval) {
+       previousMillis = currentMillis;
+       programmedTime -= 1;
+       if (programmedTime == 0) {
+         clockActive = false;
+         digitalWrite(outputPin, LOW);
+       }
+       updateDisplay();
+    }
   }
   
 
