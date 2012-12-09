@@ -1,8 +1,7 @@
 
 #include "lcd.h"
 #include "button.h"
-
-//#define _INSOLA_3000_DEBUG_
+#include "config.h"
 
 // Inputs
 Button * upButton;
@@ -14,6 +13,7 @@ int outputPin;
 int outputState;
 
 // Clock variables
+boolean clockActive = false;
 long startTimeMilis = 0;
 
 
@@ -28,6 +28,16 @@ void startStopButtonPressed() {
   Serial.println("StartStop button pressed");
 #endif
 
+  if (clockActive) {
+    
+    clockActive=false;
+    
+  } else {
+  
+    clockActive=true;
+  }
+
+
 }
 
 void upButtonPressed() {
@@ -35,6 +45,10 @@ void upButtonPressed() {
 #ifdef _INSOLA_3000_DEBUG_
   Serial.println("Up button pressed");
 #endif
+
+  if (!clockActive) {
+  
+  }
 
 }
 
@@ -45,20 +59,31 @@ void downButtonPressed() {
   Serial.println("Down button pressed");
 #endif
 
+  if (!clockActive) {
+  
+  }
+
+}
+
+
+void updateDisplay() {
+
+  
+  
 }
 
 void setup() {
 #ifdef _INSOLA_3000_DEBUG_
-  Serial.begin(9600);
+  Serial.begin(SERIAL_BAUDRATE);
   Serial.println("Insola 3000");
 #endif
-  lcd = new Lcd(2,4,3);
+  lcd = new Lcd(LCD_UPDATE_PIN,LCD_CLOCK_PIN,LCD_DATA_PIN);
   //lcd->sendCharString("Insola 3000", 500);
   //lcd->sendCharString("0000", 0);
   
-  startStopButton = new Button(7, startStopButtonPressed, 20);
-  upButton = new Button(5, upButtonPressed, 20);
-  downButton = new Button(6, downButtonPressed, 20);
+  upButton = new Button(UP_BUTTON_PIN, upButtonPressed, 20);
+  downButton = new Button(DOWN_BUTTON_PIN, downButtonPressed, 20);
+  startStopButton = new Button(STARTSTOP_BUTTON_PIN, startStopButtonPressed, 20);
   
   outputPin = 8;
 }
@@ -66,9 +91,9 @@ void setup() {
 void loop() {
 
   // Updating button states
-  startStopButton->update();
   upButton->update();
   downButton->update();
+  startStopButton->update();
   
   unsigned long currentMillis = millis();
  
@@ -78,5 +103,6 @@ void loop() {
      previousMillis = currentMillis;   
  
   }
+  
 
 }
