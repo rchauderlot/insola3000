@@ -9,6 +9,7 @@
 #define STARTSTOP_BUTTON_PIN  7
 #define DEBOUNCE_DELAY        20
 #define LONGPRESS_DELAY       500
+#define LONGPRESS_REPETITION  200
 
 #define LCD_DATA_PIN   3
 #define LCD_CLOCK_PIN  4
