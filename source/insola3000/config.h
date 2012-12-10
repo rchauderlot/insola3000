@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-#define _INSOLA_3000_DEBUG_
+//#define _INSOLA_3000_DEBUG_
 #define SERIAL_BAUDRATE 9600
 
 #define UP_BUTTON_PIN         5
