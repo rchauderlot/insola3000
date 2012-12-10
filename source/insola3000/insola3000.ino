@@ -16,6 +16,8 @@ boolean clockActive = false;
 long startTimeMilis = 0;
 
 long programmedTime = 0;
+long maxProgrammableTime = MAX_PROGRAMMABLE_TIME;
+long minProgrammableTime = 0;
 
 // Planificator configuration
 long previousMillis = 0;        // will store last time LCD was updated
@@ -34,7 +36,7 @@ void startStopButtonPressed() {
     clockActive=false;
     digitalWrite(outputPin, LOW);
     
-  } else if (programmedTime > 0) {
+  } else {
     clockActive=true;
     digitalWrite(outputPin, HIGH);
   }
@@ -48,11 +50,11 @@ void upButtonPressed() {
   Serial.println("Up button pressed");
 #endif
 
-  if (!clockActive) {
-    programmedTime += 5;
-    programmedTime %= MAX_PROGRAMMABLE_TIME;
-    updateDisplay();
+  programmedTime += 5;
+  if (programmedTime > 5400) {
+      programmedTime = MAX_PROGRAMMABLE_TIME;
   }
+  updateDisplay();
 
 }
 
@@ -62,11 +64,11 @@ void upButtonLongPressed() {
   Serial.println("Up button looong pressed");
 #endif
 
-  if (!clockActive) {
-    programmedTime += 60;
-    programmedTime %= MAX_PROGRAMMABLE_TIME;
-    updateDisplay();
+  programmedTime += 60;
+  if (programmedTime > 5400) {
+      programmedTime = MAX_PROGRAMMABLE_TIME;
   }
+  updateDisplay();
   
 }
 
@@ -77,11 +79,15 @@ void downButtonPressed() {
   Serial.println("Down button pressed");
 #endif
 
-  if (!clockActive) {
-    programmedTime -= 5;
-    programmedTime %= MAX_PROGRAMMABLE_TIME;
-    updateDisplay();
+  programmedTime -= 5;
+  if (programmedTime < minProgrammableTime) {
+      programmedTime = minProgrammableTime;
+      if (clockActive && programmedTime == 0) {
+          clockActive=false;
+          digitalWrite(outputPin, LOW);
+      }
   }
+  updateDisplay();
 
 }
 
@@ -92,11 +98,15 @@ void downButtonLongPressed() {
   Serial.println("Down button looong pressed");
 #endif
 
-  if (!clockActive) {
-    programmedTime -= 60;
-    programmedTime %= MAX_PROGRAMMABLE_TIME;
-    updateDisplay();
+  programmedTime -= 60;
+  if (programmedTime < minProgrammableTime) {
+      programmedTime = minProgrammableTime;
+      if (clockActive && programmedTime == 0) {
+          clockActive=false;
+          digitalWrite(outputPin, LOW);
+      }
   }
+  updateDisplay();
   
 }
 
@@ -145,7 +155,7 @@ void loop() {
   downButton->update();
   startStopButton->update();
   
-  if (clockActive) {
+  if (clockActive && programmedTime > 0) {
     unsigned long currentMillis = millis();
  
     if(currentMillis - previousMillis > interval) {
