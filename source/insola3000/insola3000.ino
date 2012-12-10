@@ -20,8 +20,8 @@ long maxProgrammableTime = MAX_PROGRAMMABLE_TIME;
 long minProgrammableTime = 0;
 
 // Planificator configuration
-long previousMillis = 0;        // will store last time LCD was updated
-long interval = 1000;           // interval at which to upload (milliseconds) 
+unsigned long previousMillis = 0;        // will store last time LCD was updated
+unsigned long interval = 1000;           // interval at which to upload (milliseconds) 
 
 
 
@@ -51,8 +51,8 @@ void upButtonPressed() {
 #endif
 
   programmedTime += 5;
-  if (programmedTime > 5400) {
-      programmedTime = MAX_PROGRAMMABLE_TIME;
+  if (programmedTime > maxProgrammableTime) {
+      programmedTime = maxProgrammableTime;
   }
   updateDisplay();
 
@@ -65,8 +65,8 @@ void upButtonLongPressed() {
 #endif
 
   programmedTime += 60;
-  if (programmedTime > 5400) {
-      programmedTime = MAX_PROGRAMMABLE_TIME;
+  if (programmedTime > maxProgrammableTime) {
+      programmedTime = maxProgrammableTime;
   }
   updateDisplay();
   
@@ -136,10 +136,8 @@ void setup() {
   //lcd->sendCharString("Insola 3000", 500);
   //lcd->sendCharString("0000", 0);
 
-  upButton = new Button(UP_BUTTON_PIN, upButtonPressed, DEBOUNCE_DELAY);
-  downButton = new Button(DOWN_BUTTON_PIN, downButtonPressed, DEBOUNCE_DELAY);
-//  upButton = new Button(UP_BUTTON_PIN, upButtonPressed, DEBOUNCE_DELAY, upButtonLongPressed, LONGPRESS_DELAY);
-//  downButton = new Button(DOWN_BUTTON_PIN, downButtonPressed, DEBOUNCE_DELAY, downButtonLongPressed, LONGPRESS_DELAY);
+  upButton = new Button(UP_BUTTON_PIN, upButtonPressed, DEBOUNCE_DELAY, upButtonLongPressed, LONGPRESS_DELAY, LONGPRESS_REPETITION);
+  downButton = new Button(DOWN_BUTTON_PIN, downButtonPressed, DEBOUNCE_DELAY, downButtonLongPressed, LONGPRESS_DELAY, LONGPRESS_REPETITION);
   startStopButton = new Button(STARTSTOP_BUTTON_PIN, startStopButtonPressed, DEBOUNCE_DELAY);
   
   outputPin = OUTPUT_PIN;
