@@ -10,22 +10,26 @@ Button::Button(int pin, void(*buttonPressedCallback)(void), long debounceDelay) 
   _lastDebounceTime = 0;
   _buttonState = LOW;
   _lastButtonState = LOW;
+  _longPressRecognitionDelay = 0;
   _longPressRepetitionDelay = 0;
   _lastLongPressTime = 0;
+  _longPressRecognized = false;
 
   pinMode(_pin, INPUT);
 }
 
-Button::Button(int pin, void(*buttonPressedCallback)(void), long debounceDelay, void(*buttonLongPressedCallback)(void), long longPressRepetitionDelay) {
+Button::Button(int pin, void(*buttonPressedCallback)(void), long debounceDelay, void(*buttonLongPressedCallback)(void), long longPressRecognitionDelay, long longPressRepetitionDelay) {
   _pin = pin;
   _buttonPressedCallback = buttonPressedCallback;
-  _buttonLongPressedCallback = buttonPressedCallback;
+  _buttonLongPressedCallback = buttonLongPressedCallback;
   _debounceDelay = debounceDelay;
   _lastDebounceTime = 0;
   _buttonState = LOW;
   _lastButtonState = LOW;
+  _longPressRecognitionDelay = longPressRecognitionDelay;
   _longPressRepetitionDelay = longPressRepetitionDelay;
   _lastLongPressTime = 0;
+  _longPressRecognized = false;
   pinMode(_pin, INPUT);
 }
 
@@ -47,11 +51,13 @@ void Button::update() {
   if ((readingTime - _lastDebounceTime) > _debounceDelay) {
     // If a up to down transition detected call the pressed calback
     if (_buttonState == HIGH && reading == LOW) {
-      if (!_buttonLongPressedCallback) {
+      if (!_buttonLongPressedCallback || !_longPressRecognized) {
         _buttonPressedCallback();
       } else if (_longPressRepetitionDelay == 0)  {
-        _buttonLongPressedCallback();
+       _buttonLongPressedCallback();
       }
+      _lastLongPressTime = 0;
+      _longPressRecognized=false;
     }
     
    // If a up high transition detected call 
@@ -63,13 +69,23 @@ void Button::update() {
     _buttonState = reading;
   }
   
-  if (_buttonLongPressedCallback && _longPressRepetitionDelay > 0 && (readingTime - _lastLongPressTime) > _longPressRepetitionDelay) {
+  
+  if (_buttonState && _buttonLongPressedCallback && _longPressRecognitionDelay > 0 && !_longPressRecognized && (readingTime - _lastLongPressTime) > _longPressRecognitionDelay) {
+    _longPressRecognized = true;
+    if (_longPressRepetitionDelay > 0) {
+      _buttonLongPressedCallback();
+      _lastLongPressTime = readingTime;
+    }
+  } else if (_buttonState && _longPressRecognized && _longPressRepetitionDelay > 0 && (readingTime - _lastLongPressTime) > _longPressRepetitionDelay) {
     _buttonLongPressedCallback();
     _lastLongPressTime = readingTime;
   }
 
+
+
   // save the reading.  Next time through the loop,
   // it'll be the lastButtonState:
   _lastButtonState = reading;
+  
 
 }
