@@ -1,6 +1,7 @@
 
-#include "lcd.h"
-#include "button.h"
+
+#include <lcd.h>
+#include <button.h>
 #include "config.h"
 
 // Inputs
