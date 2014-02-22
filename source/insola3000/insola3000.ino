@@ -119,12 +119,14 @@ void updateDisplay() {
   int minutesLSD = minutes % 10;
   int secondsMSD = seconds / 10; 
   int secondsLSD = seconds % 10;
-  
-  lcd->sendDigit(secondsLSD);
-  lcd->sendDigit(secondsMSD);
-  lcd->sendDigit(minutesLSD);
-  lcd->sendDigit(minutesMSD);
-  
+
+  char buffer[5];
+  buffer[0]='0'+minutesMSD;
+  buffer[1]='0'+minutesLSD;
+  buffer[2]='0'+secondsMSD;
+  buffer[3]='0'+secondsLSD;
+  buffer[4]=0;
+  lcd->sendCharString(buffer, true);
 }
 
 void setup() {

@@ -14,12 +14,15 @@ public:
   
   void sendByte(char character);
   void sendChar(char character);
-  void sendDigit(int zeroToNineDigit);
-  void sendCharString(char zeroEndedCharPointer[], int delayBetweenDigits);
+  // if number not representable an E is printed
+  void sendDigit(int number, int numberOfDigitsToSend=1, char fillChar = ' ', boolean lsb=false,int delayBetweenDigits = 0);
+  void sendCharString(char zeroEndedCharPointer[], boolean lsb=false, int delayBetweenDigits = 0);
 
 private:
 
   void sendBit(boolean active);
+  void internalSendByte(char character);
+  void internalSendChar(char character);
   
   int _updateRegisterPin;
   int _clockSerialPin;
