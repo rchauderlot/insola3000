@@ -186,13 +186,10 @@ void setup() {
 #endif
 
 
-
-  upButton = new Button(UP_BUTTON_PIN, upButtonPressed, DEBOUNCE_DELAY, upButtonLongPressed, LONGPRESS_DELAY, LONGPRESS_REPETITION);
-  downButton = new Button(DOWN_BUTTON_PIN, downButtonPressed, DEBOUNCE_DELAY, downButtonLongPressed, LONGPRESS_DELAY, LONGPRESS_REPETITION);
-  startStopButton = new Button(STARTSTOP_BUTTON_PIN, startStopButtonPressed, DEBOUNCE_DELAY);
-  pinMode(UP_BUTTON_PIN, INPUT_PULLUP);
-  pinMode(DOWN_BUTTON_PIN, INPUT_PULLUP);
-  pinMode(STARTSTOP_BUTTON_PIN, INPUT_PULLUP);
+  // INIT BUTTONS
+  upButton = new Button(UP_BUTTON_PIN, upButtonPressed, DEBOUNCE_DELAY, upButtonLongPressed, LONGPRESS_DELAY, LONGPRESS_REPETITION, LOW, true);
+  downButton = new Button(DOWN_BUTTON_PIN, downButtonPressed, DEBOUNCE_DELAY, downButtonLongPressed, LONGPRESS_DELAY, LONGPRESS_REPETITION, LOW, true);
+  startStopButton = new Button(STARTSTOP_BUTTON_PIN, startStopButtonPressed, DEBOUNCE_DELAY, LOW, true);
   if (BUTTONS_COMMON_PIN >= 0) {  // key board common...cathode
     pinMode(BUTTONS_COMMON_PIN, OUTPUT);
     digitalWrite(BUTTONS_COMMON_PIN, BUTTONS_COMMON_VALUE);
