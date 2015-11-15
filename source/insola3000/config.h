@@ -19,7 +19,10 @@
 #define LCD_CLOCK_PIN  6
 #define LCD_UPDATE_PIN -1
 
-#define OUTPUT_PIN 13
+#define OUTPUT_GND_PIN   10
+#define OUTPUT_VCC_PIN   12
+#define OUTPUT_PIN       11
+#define OUTPUT_DEBUG_PIN 13
 
 #define MAX_PROGRAMMABLE_TIME 90*60;
 

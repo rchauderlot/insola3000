@@ -28,6 +28,7 @@ Lcd * lcd = new Lcd(LCD_UPDATE_PIN,LCD_CLOCK_PIN,LCD_DATA_PIN);
 TM1637 * lcd = new TM1637(LCD_CLOCK_PIN, LCD_DATA_PIN);
 #endif
 int outputPin;
+int outputDebugPin;
 
 // Clock variables
 boolean clockActive = false;
@@ -53,10 +54,12 @@ void startStopButtonPressed() {
     
     clockActive=false;
     digitalWrite(outputPin, LOW);
+    digitalWrite(outputDebugPin, LOW);
     
   } else {
     clockActive=true;
     digitalWrite(outputPin, HIGH);
+    digitalWrite(outputDebugPin, HIGH);
   }
 
 
@@ -103,6 +106,7 @@ void downButtonPressed() {
       if (clockActive && programmedTime == 0) {
           clockActive=false;
           digitalWrite(outputPin, LOW);
+          digitalWrite(outputDebugPin, LOW);
       }
   }
   updateDisplay();
@@ -122,6 +126,7 @@ void downButtonLongPressed() {
       if (clockActive && programmedTime == 0) {
           clockActive=false;
           digitalWrite(outputPin, LOW);
+          digitalWrite(outputDebugPin, LOW);
       }
   }
   updateDisplay();
@@ -161,11 +166,16 @@ void updateDisplay() {
 }
 
 void setup() {
+
+  // INIT DEBUG SERIAL LINE
 #ifdef _INSOLA_3000_DEBUG_
   Serial.begin(SERIAL_BAUDRATE);
   Serial.println("Insola 3000");
 #endif
 
+
+
+  // INIT LCD
   if (LCD_VCC_PIN >= 0) {
     pinMode(LCD_VCC_PIN, OUTPUT);
     digitalWrite(LCD_VCC_PIN, HIGH);
@@ -174,12 +184,6 @@ void setup() {
     pinMode(LCD_GND_PIN, OUTPUT);
     digitalWrite(LCD_GND_PIN, LOW);
   }
-  // ALready init when created the class
-  //lcd = new Lcd(LCD_UPDATE_PIN,LCD_CLOCK_PIN,LCD_DATA_PIN);
-  
-//  lcd->sendCharString("Insola 3000", 500);
-//  lcd->sendCharString("0000", 0);
-
 #ifdef LCD_TM1637
   lcd->init();
   lcd->set(BRIGHT_TYPICAL);//BRIGHT_TYPICAL = 2,BRIGHT_DARKEST = 0,BRIGHTEST = 7;
@@ -196,13 +200,27 @@ void setup() {
   }
   
 
+  // INIT RELAY
+  if (OUTPUT_GND_PIN >= 0) {
+    pinMode(OUTPUT_GND_PIN, OUTPUT);
+    digitalWrite(OUTPUT_GND_PIN, LOW);
+  }
+  if (OUTPUT_VCC_PIN >= 0) {
+    pinMode(OUTPUT_VCC_PIN, OUTPUT);
+    digitalWrite(OUTPUT_VCC_PIN, HIGH);
+  }
+  if (OUTPUT_PIN >= 0) {
+    outputPin = OUTPUT_PIN;
+    pinMode(outputPin, OUTPUT);
+  }
 
-  outputPin = OUTPUT_PIN;
-  pinMode(outputPin, OUTPUT);
+  // INIT RELAY DEBUG PIN
+  if (OUTPUT_DEBUG_PIN >= 0) {
+    outputDebugPin = OUTPUT_DEBUG_PIN;
+    pinMode(outputDebugPin, OUTPUT);
+  }
 
-
-  
-  
+    
   updateDisplay();
 }
 
