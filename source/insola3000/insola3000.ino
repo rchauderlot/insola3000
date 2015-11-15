@@ -1,15 +1,32 @@
 
+#define LCD_TM1637
+//#define LCD_74HC595
 
+
+
+#ifdef LCD_74HC595
 #include <lcd.h>
+#endif
+#ifdef LCD_TM1637
+#include <TM1637.h>
+#endif
+
 #include <button.h>
 #include "config.h"
+
+#define LCD_DIGITS 4
 
 // Inputs
 Button * upButton;
 Button * downButton;
 Button * startStopButton;
 // Outputs
-Lcd * lcd;
+#ifdef LCD_74HC595
+Lcd * lcd = new Lcd(LCD_UPDATE_PIN,LCD_CLOCK_PIN,LCD_DATA_PIN);
+#endif
+#ifdef LCD_TM1637
+TM1637 * lcd = new TM1637(LCD_CLOCK_PIN, LCD_DATA_PIN);
+#endif
 int outputPin;
 
 // Clock variables
@@ -121,13 +138,26 @@ void updateDisplay() {
   int secondsMSD = seconds / 10; 
   int secondsLSD = seconds % 10;
 
-  char buffer[5];
+#ifdef LCD_74HC595
+  char buffer[LCD_DIGITS+1];
   buffer[0]='0'+minutesMSD;
   buffer[1]='0'+minutesLSD;
   buffer[2]='0'+secondsMSD;
   buffer[3]='0'+secondsLSD;
   buffer[4]=0;
   lcd->sendCharString(buffer, true);
+#endif
+#ifdef LCD_TM1637
+  int buffer[LCD_DIGITS];
+  buffer[0]=minutesMSD;
+  buffer[1]=minutesLSD;
+  buffer[2]=secondsMSD;
+  buffer[3]=secondsLSD;
+  for (int i= LCD_DIGITS - 1; i>=0; i--) {
+    lcd->display(i,buffer[i]);
+ }
+#endif
+  
 }
 
 void setup() {
@@ -135,17 +165,47 @@ void setup() {
   Serial.begin(SERIAL_BAUDRATE);
   Serial.println("Insola 3000");
 #endif
-  lcd = new Lcd(LCD_UPDATE_PIN,LCD_CLOCK_PIN,LCD_DATA_PIN);
-  //lcd->sendCharString("Insola 3000", 500);
-  //lcd->sendCharString("0000", 0);
+
+  if (LCD_VCC_PIN >= 0) {
+    pinMode(LCD_VCC_PIN, OUTPUT);
+    digitalWrite(LCD_VCC_PIN, HIGH);
+  }
+  if (LCD_GND_PIN >= 0) {
+    pinMode(LCD_GND_PIN, OUTPUT);
+    digitalWrite(LCD_GND_PIN, LOW);
+  }
+  // ALready init when created the class
+  //lcd = new Lcd(LCD_UPDATE_PIN,LCD_CLOCK_PIN,LCD_DATA_PIN);
+  
+//  lcd->sendCharString("Insola 3000", 500);
+//  lcd->sendCharString("0000", 0);
+
+#ifdef LCD_TM1637
+  lcd->init();
+  lcd->set(BRIGHT_TYPICAL);//BRIGHT_TYPICAL = 2,BRIGHT_DARKEST = 0,BRIGHTEST = 7;
+#endif
+
+
 
   upButton = new Button(UP_BUTTON_PIN, upButtonPressed, DEBOUNCE_DELAY, upButtonLongPressed, LONGPRESS_DELAY, LONGPRESS_REPETITION);
   downButton = new Button(DOWN_BUTTON_PIN, downButtonPressed, DEBOUNCE_DELAY, downButtonLongPressed, LONGPRESS_DELAY, LONGPRESS_REPETITION);
   startStopButton = new Button(STARTSTOP_BUTTON_PIN, startStopButtonPressed, DEBOUNCE_DELAY);
+  pinMode(UP_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(DOWN_BUTTON_PIN, INPUT_PULLUP);
+  pinMode(STARTSTOP_BUTTON_PIN, INPUT_PULLUP);
+  if (BUTTONS_COMMON_PIN >= 0) {  // key board common...cathode
+    pinMode(BUTTONS_COMMON_PIN, OUTPUT);
+    digitalWrite(BUTTONS_COMMON_PIN, BUTTONS_COMMON_VALUE);
+  }
   
+
+
   outputPin = OUTPUT_PIN;
   pinMode(outputPin, OUTPUT);
-    
+
+
+  
+  
   updateDisplay();
 }
 
